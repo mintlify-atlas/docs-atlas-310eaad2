@@ -1,0 +1,111 @@
+---
+title: "Appointment booking and lifecycle"
+description: "Learn how EdgeTimer appointments move from request to completion, including booking methods, state transitions, and modification rules."
+---
+
+Appointments in EdgeTimer represent a confirmed or in-progress agreement between a client and a barber. Every appointment tracks who requested it, which procedures are included, when it is scheduled, and what state it is currently in. The system supports two booking paths and a clear set of states that both clients and barbers can act on throughout the appointment's life.
+
+## Appointment states
+
+Every appointment carries an `estado` value that determines which actions are available. The five possible states are:
+
+| State | Label | Description |
+|---|---|---|
+| `pendiente` | Pending | The client has submitted a request; the barber has not yet responded. |
+| `confirmada` | Confirmed | The barber accepted the request. The appointment is scheduled. |
+| `realizada` | Completed | The appointment took place. Clients can now submit a rating. |
+| `cancelada` | Cancelled | Either party cancelled before the appointment occurred. |
+| `rechazada` | Rejected | The barber declined the client's request. |
+
+<Note>
+Once an appointment reaches `realizada`, `cancelada`, or `rechazada`, no further state changes are possible.
+</Note>
+
+## Two ways to book
+
+### Solicitar — custom request
+
+A client picks a barber, selects one or more procedures, and proposes a specific date and start time. The request lands in the barber's queue as `pendiente` until the barber accepts or rejects it.
+
+**Required fields (`CreateSolicitudDto`):**
+
+<ParamField body="idBarbero" type="string" required>
+  ID of the barber the client wants to book.
+</ParamField>
+
+<ParamField body="procedimientoIds" type="string[]" required>
+  IDs of the procedures to include. Duration and total cost are derived from these.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  Requested date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaInicio" type="string" required>
+  Desired start time in `HH:MM` format. Must allow the appointment to end by 18:00.
+</ParamField>
+
+<ParamField body="notas" type="string">
+  Optional notes for the barber.
+</ParamField>
+
+### Reservar — reserve a slot
+
+A barber publishes an open slot with a date and start time. A client browses available slots and reserves one directly. The appointment is created immediately in `confirmada` state — no barber approval is required, because the barber already signaled availability by publishing the slot.
+
+**Required fields (`ReserveSlotDto`):**
+
+<ParamField body="slotId" type="string" required>
+  ID of the published availability slot to reserve.
+</ParamField>
+
+<ParamField body="procedimientoIds" type="string[]" required>
+  IDs of the procedures the client wants. These determine the end time of the appointment.
+</ParamField>
+
+<ParamField body="notas" type="string">
+  Optional notes for the barber.
+</ParamField>
+
+## Client view vs. barber view
+
+<Tabs>
+  <Tab title="Client view">
+    **Pending (`pendiente`)**
+    The appointment shows in the "Solicitadas" tab. The client is waiting for the barber to respond. No actions are available while the barber has not yet acted.
+
+    **Confirmed (`confirmada`)**
+    The appointment appears in the "Próximas" tab with the confirmed date and time. The client can reprogram or cancel the appointment as long as `puedeModificar` is `true`.
+
+    **Completed (`realizada`)**
+    The appointment moves to the "Pasadas" tab. If no rating has been submitted yet, a "Calificar esta cita" button appears. After rating, the score and review are displayed on the card.
+
+    **Cancelled (`cancelada`) / Rejected (`rechazada`)**
+    Shown in "Solicitadas" with a message indicating the outcome. No further actions are available.
+  </Tab>
+  <Tab title="Barber view">
+    **Pending (`pendiente`)**
+    New requests appear in the Home screen under "Solicitudes de citas" and in the "Solicitudes" tab in Agenda. The barber can **Aceptar** (accept) or **Rechazar** (reject) each request.
+
+    **Confirmed (`confirmada`)**
+    Confirmed appointments appear in "Próximas". The barber can reprogram or cancel within the modification window.
+
+    **Completed (`realizada`)**
+    Past appointments appear in "Pasadas". The barber sees either the rating the client submitted or "Sin calificación recibida." if none was given.
+
+    **Cancelled (`cancelada`) / Rejected (`rechazada`)**
+    Closed appointments are shown with a status message. No further actions are possible.
+  </Tab>
+</Tabs>
+
+## Modification window (`puedeModificar`)
+
+The `puedeModificar` flag on a `Cita` controls whether the reprogram and cancel actions are enabled. It is `true` only when the appointment is at least one full day in the future.
+
+<Warning>
+Attempting to reprogram or cancel an appointment on the same day it is scheduled will fail. The action buttons are disabled and the message "Solo puedes modificar citas con al menos 1 día de antelación" is shown.
+</Warning>
+
+## Rescheduling an appointment
+
+When rescheduling (`ReprogramCitaDto`), the new date, start time, and end time must all be provided. The end time is validated against the sum of the appointment's procedure durations — it must exactly match `horaInicio` plus the total `duracionMinutos`. All rescheduled appointments must also fall on a weekday (Monday–Friday) between 08:00 and 18:00.

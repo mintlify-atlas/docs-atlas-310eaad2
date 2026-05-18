@@ -1,0 +1,97 @@
+---
+title: "Running the EdgeTimer backend"
+description: "How to install dependencies, set Supabase environment variables, and run the EdgeTimer NestJS backend in development and production."
+---
+
+The EdgeTimer backend requires Node.js, a Supabase project, and a small set of environment variables. The steps below walk through cloning the repository, installing dependencies, wiring up Supabase credentials, and starting the server in both development and production modes.
+
+<Steps>
+  <Step title="Clone the repo and navigate to the backend">
+    ```bash
+    git clone https://github.com/JulietaEM/EdgeTimer.git
+    cd EdgeTimer/backend
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+
+    This installs NestJS 11, the Supabase JS client, and all dev dependencies including the NestJS CLI, TypeScript, and Jest.
+  </Step>
+
+  <Step title="Configure environment variables">
+    Create a `.env` file in the `backend/` directory. At a minimum you need the three Supabase connection variables:
+
+    ```bash .env
+    SUPABASE_URL=https://<your-project-ref>.supabase.co
+    SUPABASE_KEY=<your-anon-public-key>
+    SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+    ```
+
+    The application throws at startup if any of these three are missing. See [Environment variables](/backend/configuration) for the full variable reference including optional storage bucket names.
+
+    <Tip>
+      Find `SUPABASE_URL` and `SUPABASE_KEY` under **Project Settings → API** in the Supabase dashboard. The `SUPABASE_SERVICE_ROLE_KEY` is listed in the same section under **Service role**.
+    </Tip>
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    npm run start:dev
+    ```
+
+    This runs `nest start --watch`, which recompiles on every file change. The server listens on `http://localhost:3000` by default.
+  </Step>
+
+  <Step title="Build and run for production">
+    <CodeGroup>
+
+    ```bash Build
+    npm run build
+    ```
+
+    ```bash Start production
+    npm run start:prod
+    ```
+
+    </CodeGroup>
+
+    `npm run build` compiles TypeScript to `dist/` using the NestJS CLI. `npm run start:prod` runs the compiled output directly with `node dist/main.js`. This is the same sequence the `Procfile` uses on Heroku.
+  </Step>
+</Steps>
+
+## Available scripts
+
+All scripts are defined in `package.json` and invoked via `npm run <script>`.
+
+| Script | Command | Description |
+|---|---|---|
+| `start` | `nest start` | Start without file watching |
+| `start:dev` | `nest start --watch` | Start with hot reload |
+| `start:debug` | `nest start --debug --watch` | Start with Node.js debugger attached |
+| `start:prod` | `node dist/main.js` | Run the compiled output |
+| `build` | `nest build` | Compile TypeScript to `dist/` |
+| `test` | `jest` | Run unit tests |
+| `test:e2e` | `jest --config ./test/jest-e2e.json` | Run end-to-end tests |
+
+<CodeGroup>
+
+```bash Development
+# Hot-reloading server
+npm run start:dev
+
+# Debugger on port 9229
+npm run start:debug
+```
+
+```bash Production
+# 1. Compile TypeScript
+npm run build
+
+# 2. Start the compiled server
+npm run start:prod
+```
+
+</CodeGroup>

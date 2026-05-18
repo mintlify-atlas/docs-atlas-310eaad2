@@ -1,0 +1,133 @@
+---
+title: 'App screens and navigation flow'
+description: 'A guide to every screen in the EdgeTimer mobile app, covering what clients and barbers see, available actions, and the full navigation flow.'
+---
+
+EdgeTimer organizes its screens into two groups: auth screens shown before login, and app screens shown after. The type system reflects this directly — `AuthScreen` covers `'role' | 'login' | 'register'` and `AppScreen` covers `'home' | 'agenda' | 'perfil'`. Both client and barber users move through the same screen names, but the content each screen renders adapts to the active role.
+
+## Auth screens
+
+### Role
+
+The first screen every user sees. It displays two buttons — **Barbero** and **Usuario** — and no form fields. Tapping **Barbero** routes to the login screen with the barber role pre-selected. Tapping **Usuario** routes to registration, because new clients must create an account before they can log in.
+
+<Note>
+Barbers cannot self-register through the app. Barber accounts must be created through the backend directly.
+</Note>
+
+### Login
+
+Collects email and password. The role chosen on the Role screen is passed invisibly; the backend returns a session token and a profile object on success. The `Authorization: Bearer <token>` header is then set on the shared Axios instance for all subsequent requests.
+
+Clients see a "Don't have an account? Register" link at the bottom. Barbers do not, because registration is not available for that role in the app. Both roles see a "Back to roles" link.
+
+### Register
+
+Only accessible when the client role is active. Collects four fields:
+
+- **Nombre** — full name
+- **Email** — used as the login identifier
+- **Teléfono** — phone number
+- **Contraseña** — password
+
+On success the user is redirected to the login screen with a confirmation message. A "Already have an account? Log in" link is also available.
+
+---
+
+## App screens
+
+After login, the `AppShell` component wraps all three app screens and provides consistent navigation. On desktop (≥ 820 px) a sidebar is always visible. On mobile a header bar with a toggle button reveals the menu on demand.
+
+<Tabs>
+  <Tab title="Client flow">
+    ### Home — client view
+
+    The client home screen loads four data sets in parallel on mount: the barber catalog, the procedure catalog, the client's own appointments, and all currently available time slots.
+
+    **Available slots section**
+
+    Open slots published by barbers appear as cards showing the barber's photo, name, date, and start time. Each card has a **Reservar** button that opens the Reserve modal.
+
+    **Reserve modal** — the client selects one or more procedures from a pill-picker list. The app calculates the estimated end time and total cost in real time. Submitting posts to `/citas/reservar` and creates a `confirmada` appointment immediately.
+
+    **Barbers section**
+
+    All registered barbers appear as cards with their photo, specialties, working hours, and average rating. Tapping a card navigates to that barber's Perfil screen. Each card also has a **Solicitar Cita** button that opens the Request modal with the barber pre-selected.
+
+    **Request modal** — the client picks a barber (if not pre-selected), one or more procedures, a date, and a preferred start time. The estimated duration and end time are shown. Submitting posts to `/citas/solicitar`, which creates a pending appointment request.
+
+    ### Agenda — client view
+
+    The Agenda screen shows the client's full appointment history, filtered by the active tab.
+
+    | Tab | Contents |
+    |---|---|
+    | **Proximas** | Confirmed appointments with a future end time |
+    | **Solicitadas** | Appointments in `pendiente`, `rechazada`, or `cancelada` state |
+    | **Pasadas** | Completed appointments (`realizada`), sorted newest first |
+    | **Calendario** | Monthly calendar with a day detail panel (visible on narrow screens) |
+
+    On wide screens (≥ 900 px web) the calendar is always shown beside the list; the Calendario tab is hidden. On narrower screens, the calendar tab reveals the full-width calendar view.
+
+    Each appointment card for upcoming and requested appointments shows the barber's name, procedures, total cost, date and time range, and a status badge. Actions available:
+
+    - **Reprogramar** — opens a modal to pick a new date and start time (disabled within 1 day of the appointment)
+    - **Cancelar** — cancels the appointment (disabled within 1 day)
+
+    Past appointment cards show the existing rating if one was left, or a **Calificar esta cita** button to submit a 1–5 star rating with an optional review.
+
+    ### Perfil — client view
+
+    Displays the client's profile photo, full name, username, and registration date. A **Actualizar foto** button opens the device image picker (requires media library permission on native). The selected image is uploaded to `/catalogos/clientes/:id/foto`.
+
+    Clients can also reach a barber's Perfil screen by tapping a barber card on Home. The barber's Perfil shows their photo, average rating, working hours, and a grid of service cards listing each specialty with name, description, price, and duration.
+  </Tab>
+  <Tab title="Barber flow">
+    ### Home — barber view
+
+    The barber home screen loads four datasets in parallel on mount: the barber catalog, the procedure catalog, the barber's own appointments, and their published open slots. The main action button reads **Abrir nuevo horario**.
+
+    **Open slot modal** — the barber picks a date and a start time (limited to before 18:00). Submitting posts to `/slots`. The slot is then visible to clients as a bookable time.
+
+    **Appointment requests section**
+
+    Pending appointment requests from clients appear as cards showing the client's name, procedures requested, total cost, and desired date and time range. Each card has two actions:
+
+    - **Aceptar** — confirms the appointment (patches `/citas/:id/aceptar`)
+    - **Rechazar** — declines the request (patches `/citas/:id/rechazar`)
+
+    If no pending requests exist, a message reads "No tienes solicitudes de citas pendientes."
+
+    ### Agenda — barber view
+
+    Functions identically to the client Agenda in structure, but with role-appropriate labels and actions.
+
+    | Tab | Contents |
+    |---|---|
+    | **Proximas** | Confirmed upcoming appointments |
+    | **Solicitudes** | Pending, rejected, and cancelled requests |
+    | **Pasadas** | Completed appointments |
+    | **Calendario** | Monthly calendar showing appointment and open slot indicators |
+
+    The calendar highlights days differently based on content: upcoming/pending appointments appear with a green border, completed appointments appear gray, and open slots appear gold. Tapping any day shows a detail panel listing slots and appointments for that day.
+
+    Barbers see **Aceptar** and **Rechazar** buttons on pending request cards in the Solicitudes tab. Confirmed upcoming appointments show **Reprogramar** and **Cancelar** buttons, both disabled within 1 day of the appointment. On past appointments the barber sees whether a rating was received from the client.
+
+    ### Perfil — barber view
+
+    Shows the barber's own profile photo, full name, username, and registration date. The **Actualizar foto** button uploads to `/catalogos/barberos/:id/foto`.
+
+    When a barber navigates to another barber's Perfil (reachable if they tap a barber card on Home), the same barber profile layout is rendered — photo, rating, working hours, and specialties grid — but without the upload button, since `canUpload` is only true when `barberoId === profile.id`.
+  </Tab>
+</Tabs>
+
+## Screen type reference
+
+```typescript src/types.ts
+export type Role = 'cliente' | 'barbero';
+export type AuthScreen = 'role' | 'login' | 'register';
+export type AppScreen = 'home' | 'agenda' | 'perfil';
+export type Screen = AuthScreen | AppScreen;
+```
+
+The top-level `App` component holds the active `Screen` in state and renders the correct screen. When the screen is one of the `AppScreen` values, `AppShell` wraps the content. Auth screens render inside a plain `SafeAreaView` with the app logo and a scroll-friendly layout.

@@ -1,126 +1,92 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "EdgeTimer",
+  "theme": "almond",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#ae834c",
+    "light": "#60482a",
+    "dark": "#8e6b3e"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "https://media.brand.dev/c69cde26-b92e-42af-b456-3f90fd6680e5.png",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/JulietaEM/EdgeTimer"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/JulietaEM/EdgeTimer"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "quickstart-client",
+              "quickstart-barber"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Features",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/appointments",
+              "features/availability-slots",
+              "features/barber-catalog",
+              "features/ratings"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Mobile App",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
+              "mobile/overview",
+              "mobile/screens",
+              "mobile/configuration"
             ]
           },
           {
-            "group": "Agent ready",
+            "group": "Backend",
             "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "backend/overview",
+              "backend/setup",
+              "backend/configuration"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Authentication",
             "pages": [
-              "api-reference/introduction"
+              "api/auth/register",
+              "api/auth/login"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Appointments",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/citas/list",
+              "api/citas/request",
+              "api/citas/reserve",
+              "api/citas/manage"
+            ]
+          },
+          {
+            "group": "Slots & Catalog",
+            "pages": [
+              "api/slots/manage",
+              "api/catalogos/overview"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

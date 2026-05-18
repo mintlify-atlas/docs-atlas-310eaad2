@@ -1,0 +1,258 @@
+---
+title: "Appointment management endpoints"
+description: "Endpoints for accepting, rejecting, canceling, rescheduling, and rating appointments once they have been created and are in progress."
+---
+
+Once an appointment exists, both clients and barbers use these endpoints to move it through its lifecycle. A barber accepts or rejects pending requests. Either party can cancel. The client who created the appointment can reschedule it while it is still modifiable. After a completed appointment, the client can leave a rating and review.
+
+## Base URL
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+---
+
+## Accept an appointment
+
+`PATCH /citas/:id/aceptar`
+
+Moves a `"pendiente"` appointment to `"confirmada"`. Only the assigned barber may call this endpoint.
+
+### Path parameter
+
+<ParamField path="id" type="string" required>
+  The ID of the appointment to accept.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="role" type="string" required>
+  Must be `"barbero"`.
+</ParamField>
+
+<ParamField body="profileId" type="string" required>
+  The barber's profile ID. Must match the barber assigned to the appointment.
+</ParamField>
+
+### Response
+
+Returns the updated `Cita` object with `estado` set to `"confirmada"`.
+
+<CodeGroup>
+
+```bash cURL
+curl --request PATCH \
+  --url https://edgetimer-backend.onrender.com/citas/cita-042/aceptar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "role": "barbero",
+    "profileId": "barber-007"
+  }'
+```
+
+</CodeGroup>
+
+---
+
+## Reject an appointment
+
+`PATCH /citas/:id/rechazar`
+
+Moves a `"pendiente"` appointment to `"rechazada"`. Only the assigned barber may call this endpoint.
+
+### Path parameter
+
+<ParamField path="id" type="string" required>
+  The ID of the appointment to reject.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="role" type="string" required>
+  Must be `"barbero"`.
+</ParamField>
+
+<ParamField body="profileId" type="string" required>
+  The barber's profile ID. Must match the barber assigned to the appointment.
+</ParamField>
+
+### Response
+
+Returns the updated `Cita` object with `estado` set to `"rechazada"`.
+
+<CodeGroup>
+
+```bash cURL
+curl --request PATCH \
+  --url https://edgetimer-backend.onrender.com/citas/cita-042/rechazar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "role": "barbero",
+    "profileId": "barber-007"
+  }'
+```
+
+</CodeGroup>
+
+---
+
+## Cancel an appointment
+
+`PATCH /citas/:id/cancelar`
+
+Moves an appointment to `"cancelada"`. Both clients and barbers can cancel. The requesting party identifies itself via `role` and `profileId`.
+
+### Path parameter
+
+<ParamField path="id" type="string" required>
+  The ID of the appointment to cancel.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="role" type="string" required>
+  The role of the cancelling user: `"cliente"` or `"barbero"`.
+</ParamField>
+
+<ParamField body="profileId" type="string" required>
+  The profile ID of the cancelling user.
+</ParamField>
+
+### Response
+
+Returns the updated `Cita` object with `estado` set to `"cancelada"`.
+
+<CodeGroup>
+
+```bash cURL
+curl --request PATCH \
+  --url https://edgetimer-backend.onrender.com/citas/cita-042/cancelar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "role": "cliente",
+    "profileId": "abc123"
+  }'
+```
+
+</CodeGroup>
+
+---
+
+## Reschedule an appointment
+
+`PATCH /citas/:id/reprogramar`
+
+Updates the date and time of an existing appointment. Both clients and barbers can reschedule.
+
+<Note>
+  Rescheduling is only permitted when `puedeModificar` is `true` on the appointment — meaning the appointment is at least one full day away. Attempting to reschedule a same-day appointment will be rejected.
+</Note>
+
+### Path parameter
+
+<ParamField path="id" type="string" required>
+  The ID of the appointment to reschedule.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="role" type="string" required>
+  The role of the requesting user: `"cliente"` or `"barbero"`.
+</ParamField>
+
+<ParamField body="profileId" type="string" required>
+  The profile ID of the requesting user.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  New appointment date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaInicio" type="string" required>
+  New start time in `HH:MM` format.
+</ParamField>
+
+<ParamField body="horaFin" type="string" required>
+  New end time in `HH:MM` format. Must match `horaInicio` plus the total duration of the appointment's procedures. The server validates this and returns a `400` error if the value does not match the calculated end time.
+</ParamField>
+
+### Response
+
+Returns the updated `Cita` object reflecting the new date and time.
+
+<CodeGroup>
+
+```bash cURL
+curl --request PATCH \
+  --url https://edgetimer-backend.onrender.com/citas/cita-042/reprogramar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "role": "cliente",
+    "profileId": "abc123",
+    "fecha": "2026-06-20",
+    "horaInicio": "11:00",
+    "horaFin": "11:30"
+  }'
+```
+
+</CodeGroup>
+
+---
+
+## Rate an appointment
+
+`POST /citas/:id/calificar`
+
+Submits a rating and optional review for a completed appointment. Only the client may call this endpoint, and only once the appointment `estado` is `"realizada"`.
+
+### Path parameter
+
+<ParamField path="id" type="string" required>
+  The ID of the completed appointment to rate.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="profileId" type="string" required>
+  The client's profile ID. Must match the client on the appointment.
+</ParamField>
+
+<ParamField body="puntuacion" type="number" required>
+  Numeric rating from `1` (lowest) to `5` (highest).
+</ParamField>
+
+<ParamField body="resena" type="string">
+  Optional written review to accompany the rating.
+</ParamField>
+
+### Response
+
+Returns the updated `Cita` object with the `calificacion` field populated.
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://edgetimer-backend.onrender.com/citas/cita-042/calificar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "profileId": "abc123",
+    "puntuacion": 5,
+    "resena": "Excelente servicio, muy puntual y profesional."
+  }'
+```
+
+</CodeGroup>
+
+```json Example response
+{
+  "id": "cita-042",
+  "estado": "realizada",
+  "estadoLabel": "Realizada",
+  "calificacion": {
+    "puntuacion": 5,
+    "resena": "Excelente servicio, muy puntual y profesional."
+  }
+}
+```

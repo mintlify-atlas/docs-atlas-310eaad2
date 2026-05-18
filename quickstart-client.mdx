@@ -1,0 +1,80 @@
+---
+title: "Get started as a client"
+description: "Create your EdgeTimer account, browse available barbers, and book your first barbershop appointment with a client or slot request."
+---
+
+EdgeTimer lets clients book barbershop appointments directly from the mobile app. You can either request a custom appointment time with any barber in the catalog, or reserve a pre-opened availability slot. This guide walks you through account creation and your first booking.
+
+<Steps>
+  <Step title="Open the app">
+    Launch the EdgeTimer mobile app on your device. You will land on the role selection screen, which is the entry point for all users.
+  </Step>
+
+  <Step title="Choose your role">
+    On the role screen, tap **Usuario** to continue as a client. This tells the app which home experience and permissions to load for your session.
+
+    <Note>
+      If you tap **Barbero** by mistake, use the "Volver a roles" link on the login screen to go back and select the correct role.
+    </Note>
+  </Step>
+
+  <Step title="Create your account">
+    Tap **Registrarse** on the login screen to open the registration form. Fill in the following fields:
+
+    | Field | Description |
+    |---|---|
+    | `nombre` | Your full name, displayed on appointment cards |
+    | `email` | A valid email address used to log in |
+    | `telefono` | Your phone number (optional) |
+    | `password` | A password of at least 6 characters |
+
+    <Warning>
+      Passwords shorter than 6 characters will be rejected. Make sure your password meets the minimum length before submitting.
+    </Warning>
+
+    Once submitted, your account is created immediately. You will be taken to the login screen to sign in with your new credentials.
+  </Step>
+
+  <Step title="Browse barbers">
+    After logging in, the **Home** screen shows two sections:
+
+    - **Horarios disponibles** — availability slots that barbers have pre-opened. Each card shows the barber's name, date, and start time.
+    - **Barberos AlphaCorte** — the full barber catalog with photos, specialties, working hours, and average ratings.
+
+    Tap a barber card to view their profile, or tap **Solicitar Cita** directly from the catalog to pre-select that barber when requesting an appointment.
+  </Step>
+
+  <Step title="Book an appointment">
+    EdgeTimer offers two ways to book:
+
+    **Option A — Reserve a slot:** Tap **Reservar** on any available slot card. In the modal that opens, select one or more procedures. The app calculates the estimated duration and end time automatically. Tap **Confirmar reserva** to complete the booking.
+
+    **Option B — Request an appointment:** Tap **Solicitar nueva cita** (the primary action button at the top of the Home screen). In the request form, choose a barber, select procedures, pick a date (`fecha` in `YYYY-MM-DD` format), and choose a desired start time (`horaInicio`). Tap **Enviar solicitud** to send the request to the barber.
+
+    <Tip>
+      Appointment requests must finish before 18:00. The app shows the estimated end time as you select procedures, so you can adjust your start time if needed.
+    </Tip>
+
+    After submitting a **request** (Option A), your appointment appears in the Agenda with a **pendiente** (pending) status until the barber accepts or rejects it. After **reserving a slot** (Option B), the appointment is immediately **confirmada** — no barber approval needed because the slot was already published as available.
+  </Step>
+
+  <Step title="Track your appointments in Agenda">
+    Open the **Agenda** tab to manage all your appointments. The Agenda is organized into tabs:
+
+    - **Proximas** — confirmed upcoming appointments
+    - **Solicitadas** — pending requests, rejected, and cancelled appointments
+    - **Pasadas** — completed appointments, where you can leave a rating
+    - **Calendario** — a monthly calendar view showing your bookings at a glance
+
+    From the Agenda you can also reschedule or cancel an appointment, as long as it is at least one day away.
+  </Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Get started as a barber" icon="scissors" href="/quickstart-barber">
+    Learn how barbers manage their availability and accept appointment requests.
+  </Card>
+  <Card title="Appointments" icon="calendar" href="/features/appointments">
+    Understand the full appointment lifecycle from request to completion.
+  </Card>
+</CardGroup>

@@ -1,0 +1,58 @@
+---
+title: 'EdgeTimer mobile app overview'
+description: 'A React Native and Expo app that lets clients and barbers manage appointments on iOS, Android, and the web from a single codebase.'
+---
+
+EdgeTimer ships a single React Native application that serves both clients and barbers. After choosing a role at login, each user sees a tailored interface built on the same screens and navigation shell. The web version is exported with Expo and deployed to Vercel, while the same codebase runs natively on iOS and Android.
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| UI framework | React Native 0.81 |
+| App platform | Expo ~54 |
+| Language | TypeScript ~5.9 |
+| HTTP client | Axios ^1.16 |
+| Web deployment | Vercel (via `expo export --platform web`) |
+| Web analytics | Vercel Speed Insights |
+
+Custom fonts — Satoshi (titles) and Darker Grotesque (body text) — are loaded at startup via `expo-font`. The app waits for fonts to resolve before rendering any screen.
+
+## Dual-role UX
+
+The app has one user type selector at launch. Selecting **Barbero** (barber) goes straight to the login screen. Selecting **Usuario** (client) goes to registration, with a link to log in for returning users. After authentication the app reads the role from the session profile and adapts every screen accordingly — no separate builds or app variants are needed.
+
+## Main screens
+
+Once authenticated, users navigate between three screens via the AppShell:
+
+| Screen | Purpose |
+|---|---|
+| **Home** | Primary action screen — clients browse barbers and slots; barbers manage incoming requests |
+| **Agenda** | Full appointment history with calendar view, rescheduling, and ratings |
+| **Perfil** | Profile photo, account info, and barber specialty listings |
+
+## Navigation
+
+The `AppShell` component wraps all authenticated screens. On wide viewports (≥ 820 px) it renders a 250 px fixed sidebar. On narrower viewports it collapses to a top header with a toggle button that opens a drop-down panel. Both layouts provide the same three navigation items — Home, Agenda, Mi Perfil — plus a logout button.
+
+The sidebar displays the barbershop brand name **AlphaCorte** alongside the app logo. This is the in-app name used to identify the barbershop; EdgeTimer is the name of the scheduling platform itself.
+
+## API connection
+
+All network requests go through a single Axios instance configured in `src/api.ts`. The default base URL points to the hosted backend:
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+Set the `EXPO_PUBLIC_API_URL` environment variable to redirect requests to a different backend. See the [configuration page](/mobile/configuration) for details.
+
+<CardGroup cols={2}>
+  <Card title="Screens and navigation" icon="layout-dashboard" href="/mobile/screens">
+    Detailed breakdown of every screen, what users see, and how each role navigates the app.
+  </Card>
+  <Card title="Configuration" icon="settings" href="/mobile/configuration">
+    Environment variables, run commands, and Vercel deployment configuration.
+  </Card>
+</CardGroup>

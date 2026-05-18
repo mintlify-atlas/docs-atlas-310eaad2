@@ -1,133 +1,57 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "EdgeTimer: Barbershop Appointment Scheduling"
+description: "EdgeTimer is a full-stack platform connecting clients and barbers. Book appointments, manage availability, and grow your barbershop business."
 ---
 
-## Setting up
+EdgeTimer is a barbershop appointment scheduling platform that brings clients and barbers together in one seamless app. Clients can browse barbers, book appointments, and rate their experience — while barbers manage their availability, confirm bookings, and build their reputation.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Get started as a client" icon="user" href="/quickstart-client">
+    Create your account, browse barbers, and book your first appointment in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Get started as a barber" icon="scissors" href="/quickstart-barber">
+    Set up your availability, manage appointment requests, and grow your client base.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="API Reference" icon="code" href="/api/auth/register">
+    Explore the full REST API for authentication, appointments, slots, and catalogs.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Core Features" icon="star" href="/features/appointments">
+    Learn how appointments, availability slots, ratings, and barber profiles work.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How EdgeTimer works
 
-Everything you need to create world-class documentation.
+EdgeTimer has two user roles — **clients** (clientes) and **barbers** (barberos) — each with their own workflow.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Create an account">
+    Clients register directly in the app. Barbers are onboarded by the barbershop administrator.
+  </Step>
+  <Step title="Browse and connect">
+    Clients browse the barber catalog, view specialties and ratings, then choose a barber to book with.
+  </Step>
+  <Step title="Book an appointment">
+    Clients either request a custom appointment time or reserve a pre-opened availability slot from a barber.
+  </Step>
+  <Step title="Manage and complete">
+    Barbers accept or decline requests, both sides can reschedule or cancel, and clients rate completed appointments.
+  </Step>
+</Steps>
 
-## Make your content agent ready
+## Explore the platform
 
-Make your docs work for humans and AI agents alike.
-
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
+<CardGroup cols={2}>
+  <Card title="Appointments" icon="calendar" href="/features/appointments">
+    Understand the full appointment lifecycle from request to completion.
   </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
+  <Card title="Availability slots" icon="clock" href="/features/availability-slots">
+    See how barbers publish open time slots that clients can instantly reserve.
   </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
+  <Card title="Barber catalog" icon="address-card" href="/features/barber-catalog">
+    Discover how barber profiles, specialties, and ratings are organized.
   </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
+  <Card title="Ratings & reviews" icon="star-half-stroke" href="/features/ratings">
+    Learn how clients rate appointments and how ratings affect barber profiles.
   </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+</CardGroup>

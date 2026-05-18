@@ -1,0 +1,99 @@
+---
+title: "Barber profiles and service catalog"
+description: "Explore how EdgeTimer organizes barber profiles, specialties, pricing, and service procedures that clients browse before booking an appointment."
+---
+
+The EdgeTimer catalog gives clients a complete picture of every barber available at the shop. Each barber profile includes a photo, working hours, and the list of procedures they offer with prices and durations. Clients use this information to choose the right barber and select which services to include when booking. Barbers maintain their profile through a photo upload endpoint, and their average rating is automatically updated as clients leave reviews.
+
+## Barber profile fields
+
+<CardGroup cols={2}>
+  <Card title="nombre" icon="user">
+    The barber's display name, shown on their profile card and on every appointment they are part of.
+  </Card>
+  <Card title="foto" icon="image">
+    A signed URL pointing to the barber's profile photo stored in Supabase Storage. Falls back to a default avatar when no photo has been uploaded.
+  </Card>
+  <Card title="promedioCalificacion" icon="star">
+    The barber's average rating across all completed and rated appointments. Displayed on the profile card with one decimal place (e.g., `4.7`).
+  </Card>
+  <Card title="especialidades" icon="scissors">
+    The list of procedures the barber performs, derived from the `barbero_procedimiento` join table. Each entry includes `id`, `nombre`, `precio`, and `duracionMinutos`.
+  </Card>
+  <Card title="horarioLaboral" icon="clock">
+    A human-readable string describing the barber's working hours (e.g., "Lunes a viernes, 8am-6pm"). Displayed on profile cards in the client home.
+  </Card>
+</CardGroup>
+
+## Service procedures
+
+Procedures define the individual services a barber can perform. When a client books an appointment, they select one or more procedures, and the system totals their prices and durations to calculate the cost and end time.
+
+<CardGroup cols={2}>
+  <Card title="nombre" icon="tag">
+    The name of the service (e.g., "Corte clásico", "Fade"). Shown in the procedure picker and on appointment cards.
+  </Card>
+  <Card title="descripcion" icon="align-left">
+    A short text description of the service. Optional; displayed when browsing available procedures.
+  </Card>
+  <Card title="precio" icon="circle-dollar-sign">
+    The price for this procedure in the shop's local currency. Prices from all selected procedures are summed into `costoTotal` on the appointment.
+  </Card>
+  <Card title="duracionMinutos" icon="timer">
+    How long the procedure takes in minutes. Durations from all selected procedures are summed to calculate the appointment end time.
+  </Card>
+</CardGroup>
+
+## Browsing barbers
+
+Clients see all active barbers in the "Barberos AlphaCorte" section of the Home screen. Each barber card shows:
+
+- Profile photo
+- Name
+- Specialty list (comma-separated procedure names, or "Servicios generales" if none are assigned)
+- Working hours
+- Average rating
+
+Tapping a barber card opens their full profile. From any card, a client can tap **Solicitar Cita** to open the appointment request form pre-filled with that barber.
+
+<Tip>
+The `GET /catalogos/barberos` endpoint returns only barbers with `activo = true`, sorted alphabetically by name. Inactive barbers do not appear in the client catalog.
+</Tip>
+
+## Uploading a profile photo
+
+Barbers upload their profile photo using a multipart form request. The file is stored in Supabase Storage and a signed URL is saved on the barber record.
+
+**Endpoint:** `POST /catalogos/barberos/:id/foto`
+
+The request must include a `photo` field with the image file. Accepted formats are determined by the file's MIME type. After a successful upload, the response returns the new signed URL for the photo.
+
+<Note>
+Photo uploads use `upsert: true`, so re-uploading a photo for the same barber ID replaces the previous file rather than creating a duplicate.
+</Note>
+
+## Fetching procedures
+
+All active procedures are available at `GET /catalogos/procedimientos`, sorted alphabetically by name. This endpoint is called when the client opens the appointment request or reservation modal to populate the procedure picker.
+
+**Procedure response fields:**
+
+<ParamField body="id" type="string" required>
+  Unique procedure identifier (`id_procedimiento` in the database).
+</ParamField>
+
+<ParamField body="nombre" type="string" required>
+  Display name of the procedure.
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Optional description. Empty string when not set.
+</ParamField>
+
+<ParamField body="precio" type="number" required>
+  Price as a number. Formatted for display using the app's `formatMoney` utility.
+</ParamField>
+
+<ParamField body="duracionMinutos" type="number" required>
+  Duration in minutes. Used to compute the appointment end time.
+</ParamField>

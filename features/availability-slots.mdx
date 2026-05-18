@@ -1,0 +1,78 @@
+---
+title: "Barber availability slots"
+description: "Understand how barbers publish open time slots and how clients browse and reserve them to book appointments instantly in EdgeTimer."
+---
+
+Availability slots are open time windows that barbers publish to signal when they are free for appointments. Publishing a slot is a lightweight action — the barber only needs to provide a date and a start time. The final end time is not fixed until a client picks their procedures and the system calculates the total duration. Clients browse published slots on the Home screen and can reserve one in seconds without the barber needing to approve the booking separately.
+
+## How a slot works
+
+A slot stores `fecha` (date) and `horaInicio` (start time). When created, the slot's end time is automatically set to 15 minutes after the start time. When a client reserves the slot, they select one or more procedures. The sum of each procedure's `duracionMinutos` determines the final appointment end time, which may extend beyond the slot's initial 15-minute window.
+
+<Note>
+Slots that have not been reserved remain visible to all clients. Once a client reserves a slot, it converts into an appointment and is no longer shown as available.
+</Note>
+
+## Creating a slot (barber)
+
+<Steps>
+  <Step title="Open the slot form">
+    On the Home screen, tap **Abrir nuevo horario**. The slot creation modal opens.
+  </Step>
+  <Step title="Choose a date">
+    Enter the date in `YYYY-MM-DD` format. The field defaults to today's date.
+  </Step>
+  <Step title="Choose a start time">
+    Select a start time from the available hour pills. Only times before 18:00 are shown, ensuring appointments can finish within working hours. Slots must be on a weekday — the server rejects weekend dates.
+  </Step>
+  <Step title="Save the slot">
+    Tap **Guardar**. The slot is published immediately and becomes visible to all clients browsing the Home screen.
+  </Step>
+</Steps>
+
+**Slot creation fields (`CreateSlotDto`):**
+
+<ParamField body="profileId" type="string" required>
+  The barber's profile ID.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  Date for the slot in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaInicio" type="string" required>
+  Start time in `HH:MM` format. Must be before 18:00.
+</ParamField>
+
+<ParamField body="horaFin" type="string">
+  Optional field accepted by the API but not used to set the slot end time. The slot's end time is always set to 15 minutes after `horaInicio`. The final appointment end time is determined when a client selects procedures during booking.
+</ParamField>
+
+## Reserving a slot (client)
+
+<Steps>
+  <Step title="Browse available slots">
+    On the Home screen, the "Horarios disponibles" section lists all open slots with the barber's name, date, and start time.
+  </Step>
+  <Step title="Tap Reservar">
+    Tap the **Reservar** button on the slot card. The reservation modal opens, showing the barber's name, date, and start time as read-only.
+  </Step>
+  <Step title="Select procedures">
+    Choose one or more procedures from the list. Each procedure shows its name, duration in minutes, and price. The estimated end time updates in real time as you pick procedures.
+  </Step>
+  <Step title="Confirm the reservation">
+    Review the estimated duration, time range, and total cost, then tap **Confirmar reserva**. The appointment is created immediately in `confirmada` state — no barber approval is needed since the slot was already published as available.
+  </Step>
+</Steps>
+
+<Warning>
+The combined duration of selected procedures must not push the appointment past 18:00. If the estimated end time exceeds 18:00, an error message is shown and the reservation cannot be submitted.
+</Warning>
+
+## Managing slots in the Agenda calendar
+
+The **Agenda** screen includes a monthly calendar view that shows both slots and appointments visually. Barbers can see their published slots highlighted on the calendar, and tapping a date opens a day panel showing each slot's start and end time alongside any confirmed appointments for that day.
+
+<Tip>
+Barbers can update or delete a slot using the `PATCH /slots/:id` and `DELETE /slots/:id` endpoints before a client reserves it.
+</Tip>

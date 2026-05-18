@@ -1,0 +1,70 @@
+---
+title: "Appointment ratings and reviews"
+description: "Learn how clients rate completed appointments in EdgeTimer and how those ratings roll up into each barber's average profile score."
+---
+
+After an appointment reaches the `realizada` (completed) state, clients can leave a rating and an optional written review. Ratings serve two purposes: they give barbers direct feedback about a completed service, and they aggregate into the barber's `promedioCalificacion` score, which is displayed on their profile card for all clients to see. Only clients can submit ratings, and only for appointments they personally attended.
+
+## When ratings become available
+
+The "Calificar esta cita" button appears on an appointment card in the Agenda "Pasadas" tab only when all three conditions are true:
+
+1. The current user is a **client** (not a barber).
+2. The appointment's `estado` is `realizada`.
+3. The appointment's `calificacion` field is `null` — no rating has been submitted yet.
+
+Once a rating is submitted, the score and review text replace the button on the card. The rating cannot be changed after submission.
+
+<Note>
+Barbers viewing the same completed appointment see either the rating the client submitted (score and review text) or the message "Sin calificación recibida." if no rating has been left yet.
+</Note>
+
+## Rating fields (`CalificarCitaDto`)
+
+<ParamField body="profileId" type="string" required>
+  The client's profile ID. Used to verify that the user submitting the rating is the client on the appointment.
+</ParamField>
+
+<ParamField body="puntuacion" type="number" required>
+  A whole-number score from **1 to 5**. In the mobile app this is picked using a row of five numbered buttons; the selected button is highlighted.
+</ParamField>
+
+<ParamField body="resena" type="string">
+  An optional free-text review. Stored alongside the score and displayed on both the client's and barber's appointment card.
+</ParamField>
+
+## Submitting a rating
+
+From the Agenda screen, open the "Pasadas" tab and find the completed appointment. Tap **Calificar esta cita** to open the rating modal.
+
+<Steps>
+  <Step title="Select a score">
+    Tap one of the five numbered buttons to choose a score from 1 to 5. The selected button is highlighted. The default selection is 5.
+  </Step>
+  <Step title="Write an optional review">
+    Enter free-text feedback in the review field. This step is optional — submitting without a review records only the numeric score.
+  </Step>
+  <Step title="Save the rating">
+    Tap **Guardar**. The rating is posted to `POST /citas/:id/calificar`. On success, the modal closes and the card updates to show the submitted score and review.
+  </Step>
+</Steps>
+
+## How ratings affect the barber profile
+
+Each submitted rating is stored on the appointment record. The barber's `promedio_calificacion` field in the database is recalculated to reflect the running average across all rated appointments. The updated average is returned by `GET /catalogos/barberos` and `GET /catalogos/barberos/:id`, and is displayed on the barber's card in the client home screen.
+
+<Tip>
+Clients can see the current average rating before booking. A higher `promedioCalificacion` helps clients choose barbers with a strong track record.
+</Tip>
+
+## Client vs. barber perspective on ratings
+
+| Scenario | Client sees | Barber sees |
+|---|---|---|
+| Appointment completed, not yet rated | "Calificar esta cita" button | "Sin calificación recibida." |
+| Rating submitted | Score (e.g., `4/5`) and review text | Score (e.g., `4/5`) and review text |
+| Appointment not yet completed | No rating UI | No rating UI |
+
+<Warning>
+Ratings can only be submitted for appointments in the `realizada` state. Attempting to rate a `confirmada`, `cancelada`, or `rechazada` appointment will return an error.
+</Warning>

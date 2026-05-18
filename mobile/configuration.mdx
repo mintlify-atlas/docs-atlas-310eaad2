@@ -1,0 +1,83 @@
+---
+title: 'Configuring the EdgeTimer mobile app'
+description: 'How to configure the EdgeTimer mobile app, point it at a custom API backend, run it on Android, iOS, or web, and deploy the web build to Vercel.'
+---
+
+The EdgeTimer app works out of the box without any configuration — it connects to the production backend automatically. If you need to point the app at a different backend, run it on a specific platform, or deploy the web version yourself, this page covers everything you can control.
+
+## API base URL
+
+The app's HTTP client is configured in `src/api.ts`:
+
+```typescript src/api.ts
+const api = axios.create({
+  baseURL: process.env.EXPO_PUBLIC_API_URL || 'https://edgetimer-backend.onrender.com',
+  timeout: 10000,
+});
+```
+
+By default every request goes to `https://edgetimer-backend.onrender.com`. To use a different backend, set the `EXPO_PUBLIC_API_URL` environment variable before starting Expo.
+
+```bash .env
+EXPO_PUBLIC_API_URL=https://your-backend.example.com
+```
+
+<Note>
+Expo only exposes environment variables to the client bundle if they start with `EXPO_PUBLIC_`. Variables without this prefix are not available at runtime.
+</Note>
+
+<Tip>
+When developing against a local backend, use your machine's local network address rather than `localhost` so that physical devices and simulators can reach it — for example `http://192.168.1.100:3000`.
+</Tip>
+
+## Running the app
+
+Install dependencies first:
+
+```bash
+npm install
+```
+
+Then use the appropriate command for your target platform:
+
+<CodeGroup>
+
+```bash All platforms (Expo dev tools)
+npm start
+```
+
+```bash Android
+npm run android
+```
+
+```bash iOS
+npm run ios
+```
+
+```bash Web (browser)
+npm run web
+```
+
+</CodeGroup>
+
+Each command maps to an `expo start` variant defined in `package.json`. The `android` and `ios` commands open the app in a simulator or on a connected device. The `web` command opens the app in your default browser using React Native Web.
+
+## Web deployment
+
+The web build is deployed with Vercel. The `vercel.json` at the project root configures the build:
+
+```json vercel.json
+{
+  "buildCommand": "npx expo export --platform web",
+  "outputDirectory": "dist",
+  "framework": null
+}
+```
+
+Vercel runs `npx expo export --platform web`, which compiles the React Native app to static web assets and writes them to the `dist` directory. No additional framework adapter is needed.
+
+To set the API URL for a Vercel deployment, add `EXPO_PUBLIC_API_URL` as an environment variable in your Vercel project settings. The variable is baked into the static bundle at build time.
+
+<Info>
+Speed Insights from `@vercel/speed-insights` is included in the app and activates automatically on Vercel deployments. No additional setup is required.
+</Info>

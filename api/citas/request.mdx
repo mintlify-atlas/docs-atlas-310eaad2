@@ -1,0 +1,135 @@
+---
+title: "POST /citas/solicitar — request an appointment"
+description: "Create a custom appointment request by selecting a barber, one or more procedures, and a preferred date and start time for the visit."
+---
+
+The `solicitar` flow lets a client propose an appointment on their own terms. The client selects a barber, one or more procedures, a date, and a start time. The barber then receives the request and can accept or reject it. This flow differs from `reservar` — there is no pre-opened slot; the client proposes the time directly, and the appointment starts in `"pendiente"` state until the barber responds.
+
+## Base URL
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+## Request
+
+`POST /citas/solicitar`
+
+### Body parameters
+
+<ParamField body="profileId" type="string" required>
+  The profile ID of the client making the request.
+</ParamField>
+
+<ParamField body="idBarbero" type="string" required>
+  The profile ID of the barber the client wants to book with.
+</ParamField>
+
+<ParamField body="procedimientoIds" type="string[]" required>
+  Array of procedure IDs to include in the appointment. At least one ID is required.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  Requested appointment date in `YYYY-MM-DD` format (e.g., `"2026-06-15"`).
+</ParamField>
+
+<ParamField body="horaInicio" type="string" required>
+  Requested start time in `HH:MM` format (e.g., `"10:30"`). The calculated end time must fall before `18:00`.
+</ParamField>
+
+<ParamField body="notas" type="string">
+  Optional free-text notes for the barber (e.g., style preferences or special instructions).
+</ParamField>
+
+## Response
+
+Returns the newly created `Cita` object. The `estado` field is always `"pendiente"` on creation — the appointment is waiting for the barber to accept or reject it.
+
+See the [Cita object reference](/api/citas/list#cita-object) for a full description of all response fields.
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://edgetimer-backend.onrender.com/citas/solicitar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "profileId": "abc123",
+    "idBarbero": "barber-007",
+    "procedimientoIds": ["proc-01", "proc-03"],
+    "fecha": "2026-06-15",
+    "horaInicio": "10:30",
+    "notas": "Prefiero tijeras, sin máquina"
+  }'
+```
+
+```javascript JavaScript
+import axios from 'axios';
+
+const response = await axios.post(
+  'https://edgetimer-backend.onrender.com/citas/solicitar',
+  {
+    profileId: 'abc123',
+    idBarbero: 'barber-007',
+    procedimientoIds: ['proc-01', 'proc-03'],
+    fecha: '2026-06-15',
+    horaInicio: '10:30',
+    notas: 'Prefiero tijeras, sin máquina',
+  }
+);
+
+console.log(response.data);
+```
+
+</CodeGroup>
+
+```json Example response
+{
+  "id": "cita-042",
+  "cliente": {
+    "id": "abc123",
+    "nombre": "Ana López",
+    "foto": null
+  },
+  "barbero": {
+    "id": "barber-007",
+    "nombre": "Carlos Mendoza",
+    "foto": "https://example.com/fotos/carlos.jpg",
+    "promedioCalificacion": 4.8
+  },
+  "slotId": null,
+  "procedimientos": [
+    {
+      "id": "proc-01",
+      "nombre": "Corte de cabello",
+      "descripcion": "Corte clásico con tijeras",
+      "precio": 120,
+      "duracionMinutos": 30
+    },
+    {
+      "id": "proc-03",
+      "nombre": "Arreglo de barba",
+      "descripcion": null,
+      "precio": 80,
+      "duracionMinutos": 20
+    }
+  ],
+  "costoTotal": 200,
+  "inicioAt": "2026-06-15T15:30:00.000Z",
+  "finAt": "2026-06-15T16:20:00.000Z",
+  "fecha": "2026-06-15",
+  "horaInicio": "10:30",
+  "horaFin": "11:20",
+  "estado": "pendiente",
+  "estadoLabel": "Pendiente",
+  "notas": "Prefiero tijeras, sin máquina",
+  "puedeModificar": true,
+  "calificacion": null
+}
+```
+
+<Warning>
+  The appointment end time is calculated automatically from the combined duration of the selected procedures. If the calculated end time would fall at or after `18:00`, the request is rejected. Appointments are also only permitted on weekdays (Monday–Friday) — weekend dates return a `400` error. Make sure `horaInicio` leaves enough time for all procedures.
+</Warning>

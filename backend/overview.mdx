@@ -1,0 +1,74 @@
+---
+title: "EdgeTimer backend architecture"
+description: "NestJS 11 REST API powering EdgeTimer with Auth, Citas, and Catalogos modules, all backed by Supabase PostgreSQL, Auth, and Storage."
+---
+
+The EdgeTimer backend is a NestJS 11 application written in TypeScript. It exposes a REST API consumed by the EdgeTimer frontend and delegates all data persistence, authentication, and file storage to a Supabase project. The server listens on the port defined by the `PORT` environment variable (defaulting to `3000`) and is deployed via a Heroku-style `Procfile`.
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Framework | NestJS 11 (`@nestjs/core`, `@nestjs/platform-express`) |
+| Language | TypeScript 5 |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth |
+| File storage | Supabase Storage |
+| Config | `@nestjs/config` with `ConfigModule.forRoot({ isGlobal: true })` |
+
+## Application entry point
+
+The application bootstraps in `src/main.ts`. CORS is enabled for the production frontend origin and credentials are allowed so that the browser can send `Authorization` headers.
+
+```typescript src/main.ts
+const app = await NestFactory.create(AppModule);
+app.enableCors({
+  origin: 'https://edge-timer-blue.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+});
+await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+```
+
+## Supabase clients
+
+Two Supabase clients are exported from `src/supabase.ts` and used throughout the application.
+
+| Export | Key used | Purpose |
+|---|---|---|
+| `supabase` | `SUPABASE_KEY` (anon) | User-scoped queries that respect RLS policies |
+| `supabaseAdmin` | `SUPABASE_SERVICE_ROLE_KEY` | Privileged queries that bypass RLS |
+| `createSupabaseUserClient` | `SUPABASE_KEY` + JWT | Per-request client that forwards the caller's access token |
+
+The `getSignedStorageUrl` helper uses `supabaseAdmin` to generate 7-day signed URLs from any Supabase Storage path.
+
+<Note>
+  The application throws at startup if `SUPABASE_URL`, `SUPABASE_KEY`, or `SUPABASE_SERVICE_ROLE_KEY` are missing. See [Environment variables](/backend/configuration) for the full list.
+</Note>
+
+## Modules
+
+The root `AppModule` registers three feature modules alongside a global `ConfigModule`.
+
+<CardGroup cols={2}>
+  <Card title="Auth" icon="lock">
+    Handles client registration and login by delegating to Supabase Auth. Exposes two endpoints: `POST /auth/register-client` for new client accounts and `POST /auth/login` for both clients and barbers.
+  </Card>
+  <Card title="Citas" icon="calendar">
+    Manages barbershop appointments (citas). Provides endpoints to create, list, update, and cancel appointments stored in the Supabase `cita` table.
+  </Card>
+  <Card title="Catalogos" icon="list">
+    Serves read-only and admin catalog data: active barbers (`barbero`), procedures (`procedimiento`), and profile photo uploads to Supabase Storage.
+  </Card>
+</CardGroup>
+
+## Deployment
+
+The `Procfile` at the repository root defines the web dyno command used by Heroku (or compatible platforms):
+
+```text Procfile
+web: npm run build && npm run start:prod
+```
+
+This runs `nest build` to compile TypeScript to `dist/`, then starts the compiled output with `node dist/main.js`.

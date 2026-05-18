@@ -1,0 +1,209 @@
+---
+title: "GET /citas — list appointments"
+description: "Fetch all appointments for a client or barber profile, with optional filters for the view context and the current appointment status."
+---
+
+The `/citas` endpoint returns all appointments associated with a given profile. Pass `role` and `profileId` to scope results to the correct user. Use the optional `view` and `estado` parameters to narrow the list — for example, the home screen only shows upcoming confirmed appointments, while the agenda shows the full history.
+
+## Base URL
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+## Request
+
+`GET /citas`
+
+### Query parameters
+
+<ParamField query="role" type="string" required>
+  The role of the requesting user. Must be `"cliente"` or `"barbero"`.
+</ParamField>
+
+<ParamField query="profileId" type="string" required>
+  The profile ID of the requesting user. Used to filter appointments that belong to this profile.
+</ParamField>
+
+<ParamField query="view" type="string">
+  Optional display context. Accepted values: `"home"` or `"agenda"`. Affects which appointments are returned based on the screen context.
+</ParamField>
+
+<ParamField query="estado" type="string">
+  Filter results by appointment status. Accepted values: `"pendiente"`, `"confirmada"`, `"realizada"`, `"cancelada"`, `"rechazada"`.
+</ParamField>
+
+## Response
+
+Returns an array of `Cita` objects matching the query.
+
+### Cita object
+
+<ResponseField name="id" type="string">
+  Unique identifier for the appointment.
+</ResponseField>
+
+<ResponseField name="cliente" type="object">
+  The client associated with this appointment.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="string">
+      Unique identifier of the client profile.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Full name of the client.
+    </ResponseField>
+    <ResponseField name="foto" type="string | null">
+      URL of the client's profile photo, or `null` if none is set.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="barbero" type="object">
+  The barber assigned to this appointment.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="string">
+      Unique identifier of the barber profile.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Full name of the barber.
+    </ResponseField>
+    <ResponseField name="foto" type="string | null">
+      URL of the barber's profile photo, or `null` if none is set.
+    </ResponseField>
+    <ResponseField name="promedioCalificacion" type="number">
+      The barber's average rating across all rated appointments.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="slotId" type="string | null">
+  The ID of the availability slot this appointment was booked from. `null` if the appointment was created via `solicitar` rather than `reservar`.
+</ResponseField>
+
+<ResponseField name="procedimientos" type="array">
+  List of procedures scheduled for this appointment.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="string">
+      Unique identifier of the procedure.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Display name of the procedure (e.g., `"Corte de cabello"`).
+    </ResponseField>
+    <ResponseField name="descripcion" type="string">
+      Optional description of the procedure.
+    </ResponseField>
+    <ResponseField name="precio" type="number">
+      Price of the procedure in the local currency.
+    </ResponseField>
+    <ResponseField name="duracionMinutos" type="number">
+      Duration of the procedure in minutes.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="costoTotal" type="number">
+  Sum of the prices of all procedures in the appointment.
+</ResponseField>
+
+<ResponseField name="inicioAt" type="string">
+  ISO 8601 timestamp for the appointment start time.
+</ResponseField>
+
+<ResponseField name="finAt" type="string">
+  ISO 8601 timestamp for the appointment end time.
+</ResponseField>
+
+<ResponseField name="fecha" type="string">
+  Appointment date in `YYYY-MM-DD` format.
+</ResponseField>
+
+<ResponseField name="horaInicio" type="string">
+  Appointment start time in `HH:MM` format.
+</ResponseField>
+
+<ResponseField name="horaFin" type="string">
+  Appointment end time in `HH:MM` format.
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Current status of the appointment. One of: `"pendiente"`, `"confirmada"`, `"realizada"`, `"cancelada"`, `"rechazada"`.
+</ResponseField>
+
+<ResponseField name="estadoLabel" type="string">
+  Human-readable label for the current status, suitable for display in the UI.
+</ResponseField>
+
+<ResponseField name="notas" type="string">
+  Notes attached to the appointment by the client at the time of booking.
+</ResponseField>
+
+<ResponseField name="puedeModificar" type="boolean">
+  Whether the appointment can still be rescheduled or cancelled. `true` when the appointment is at least one day away.
+</ResponseField>
+
+<ResponseField name="calificacion" type="object | null">
+  Rating left by the client after the appointment is completed. `null` if the appointment has not been rated.
+
+  <Expandable title="properties">
+    <ResponseField name="puntuacion" type="number">
+      Numeric rating from 1 to 5.
+    </ResponseField>
+    <ResponseField name="resena" type="string">
+      Optional written review accompanying the rating.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url 'https://edgetimer-backend.onrender.com/citas?role=cliente&profileId=abc123&view=agenda&estado=confirmada'
+```
+
+</CodeGroup>
+
+```json Example response
+[
+  {
+    "id": "cita-001",
+    "cliente": {
+      "id": "abc123",
+      "nombre": "Ana López",
+      "foto": null
+    },
+    "barbero": {
+      "id": "barber-007",
+      "nombre": "Carlos Mendoza",
+      "foto": "https://example.com/fotos/carlos.jpg",
+      "promedioCalificacion": 4.8
+    },
+    "slotId": null,
+    "procedimientos": [
+      {
+        "id": "proc-01",
+        "nombre": "Corte de cabello",
+        "descripcion": "Corte clásico con tijeras",
+        "precio": 120,
+        "duracionMinutos": 30
+      }
+    ],
+    "costoTotal": 120,
+    "inicioAt": "2026-05-20T15:00:00.000Z",
+    "finAt": "2026-05-20T15:30:00.000Z",
+    "fecha": "2026-05-20",
+    "horaInicio": "09:00",
+    "horaFin": "09:30",
+    "estado": "confirmada",
+    "estadoLabel": "Confirmada",
+    "notas": "Prefiero tijeras, sin máquina",
+    "puedeModificar": true,
+    "calificacion": null
+  }
+]
+```

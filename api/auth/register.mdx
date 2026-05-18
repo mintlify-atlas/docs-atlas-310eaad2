@@ -1,0 +1,136 @@
+---
+title: "POST /auth/register-client"
+description: "Create a new client account on the EdgeTimer barbershop platform by providing a name, email, and password. Returns the created profile on success."
+---
+
+This endpoint creates a new client (cliente) account on the EdgeTimer platform. After a successful registration, the client can immediately log in using the `/auth/login` endpoint. Barbers are pre-configured by the admin and cannot register through this endpoint.
+
+## Base URL
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+## Request
+
+`POST /auth/register-client`
+
+### Body parameters
+
+<ParamField body="nombre" type="string" required>
+  Full name of the client.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Email address for the account. Automatically normalized to lowercase before storing.
+</ParamField>
+
+<ParamField body="telefono" type="string">
+  Phone number. Optional contact information for the client.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Account password. Must be at least 6 characters long.
+</ParamField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://edgetimer-backend.onrender.com/auth/register-client \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "nombre": "Ana López",
+    "email": "ana.lopez@example.com",
+    "telefono": "+52 55 1234 5678",
+    "password": "mysecretpass"
+  }'
+```
+
+```javascript JavaScript
+import axios from 'axios';
+
+const response = await axios.post(
+  'https://edgetimer-backend.onrender.com/auth/register-client',
+  {
+    nombre: 'Ana López',
+    email: 'ana.lopez@example.com',
+    telefono: '+52 55 1234 5678',
+    password: 'mysecretpass',
+  }
+);
+
+console.log(response.data);
+```
+
+</CodeGroup>
+
+## Response
+
+### 201 Created
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating that registration was successful.
+</ResponseField>
+
+<ResponseField name="profile" type="object">
+  The newly created client profile.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="string">
+      Unique identifier for the client account.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Full name of the client as provided during registration.
+    </ResponseField>
+    <ResponseField name="usuario" type="string">
+      Generated username for the client.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Normalized email address associated with the account.
+    </ResponseField>
+    <ResponseField name="role" type="string">
+      Always `"cliente"` for accounts created through this endpoint.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+```json Example response
+{
+  "message": "Registro exitoso. Ahora puedes iniciar sesion.",
+  "profile": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "nombre": "Ana López",
+    "usuario": "ana.lopez",
+    "email": "ana.lopez@example.com",
+    "role": "cliente"
+  }
+}
+```
+
+## Error responses
+
+| Status | Description |
+| ------ | ----------- |
+| `409 Conflict` | The email address is already registered to an existing account. |
+| `400 Bad Request` | A required field is missing, the email format is invalid, or the password is shorter than 6 characters. |
+
+```json 409 example
+{
+  "statusCode": 409,
+  "message": "Este email ya esta registrado"
+}
+```
+
+```json 400 example
+{
+  "statusCode": 400,
+  "message": "La contrasena debe tener minimo 6 caracteres"
+}
+```
+
+<Note>
+  Barbers cannot self-register. Barber accounts are pre-configured by the EdgeTimer admin. Only client accounts can be created through this endpoint.
+</Note>

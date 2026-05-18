@@ -1,0 +1,77 @@
+---
+title: "Get started as a barber"
+description: "Log in to EdgeTimer as a barber, open availability slots for clients to reserve, and manage incoming appointment requests from your schedule."
+---
+
+Barbers on EdgeTimer are pre-configured by the barbershop administrator — there is no self-registration flow for the barber role. When your account is ready, you will receive your login credentials (email and password) directly from your barbershop. This guide covers everything from your first login to managing your daily schedule.
+
+<Steps>
+  <Step title="Get your login credentials from the barbershop">
+    Your barbershop administrator creates your barber account and provides you with:
+
+    - Your registered **email address**
+    - Your initial **password**
+
+    <Note>
+      If you have not received your credentials, contact your barbershop administrator. Barbers cannot self-register through the app.
+    </Note>
+  </Step>
+
+  <Step title="Choose the Barbero role">
+    Open the EdgeTimer app. On the role selection screen, tap **Barbero**. This routes you to the barber login screen and ensures the app loads your barber profile and home experience after signing in.
+
+    Enter your email and password, then tap **Iniciar Sesión**.
+
+    <Warning>
+      If you accidentally log in under the wrong role, the server will reject the request with a role mismatch error. Go back to the role screen using the "Volver a roles" link and select **Barbero** before trying again.
+    </Warning>
+  </Step>
+
+  <Step title="Open slots for availability">
+    On the **Home** screen, tap **Abrir nuevo horario** (the primary action button). A modal opens with two required fields:
+
+    | Field | Description |
+    |---|---|
+    | `fecha` | The date you want to make available (`YYYY-MM-DD` format) |
+    | `horaInicio` | The start time of the slot (select from the hour picker, up to 17:45) |
+
+    Tap **Guardar** to publish the slot. It immediately becomes visible to clients in the **Horarios disponibles** section of their Home screen. The final appointment duration is determined later when a client selects procedures during booking.
+
+    <Tip>
+      Open slots in advance to give clients time to reserve them. You can open multiple slots for the same day with different start times.
+    </Tip>
+  </Step>
+
+  <Step title="Manage incoming appointment requests">
+    The barber Home screen displays all pending client requests under **Solicitudes de citas**. Each card shows the client's name, selected procedures, total cost, and the requested date and time.
+
+    For each request, you can:
+
+    - Tap **Aceptar** to confirm the appointment — the client will see it move to their **Proximas** tab
+    - Tap **Rechazar** to decline — the client will see the updated status in their **Solicitadas** tab
+
+    <Note>
+      Only appointments with **pendiente** status appear on the Home requests section. Accepted and past appointments are managed through the Agenda.
+    </Note>
+  </Step>
+
+  <Step title="View your schedule in Agenda">
+    Open the **Agenda** tab to see your full schedule. The Agenda is organized into tabs:
+
+    - **Proximas** — confirmed upcoming appointments with client names, procedures, and times
+    - **Solicitudes** — pending requests you have not yet acted on, as well as rejected and cancelled ones
+    - **Pasadas** — completed appointments and any ratings clients have left
+    - **Calendario** — a monthly calendar view that highlights days with open slots and booked appointments
+
+    From the Agenda you can also accept or decline pending requests, and reschedule or cancel confirmed appointments at least one day in advance.
+  </Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Get started as a client" icon="user" href="/quickstart-client">
+    See how clients create accounts and book appointments through the app.
+  </Card>
+  <Card title="Availability slots" icon="clock" href="/features/availability-slots">
+    Learn more about how slots work and how clients reserve them.
+  </Card>
+</CardGroup>

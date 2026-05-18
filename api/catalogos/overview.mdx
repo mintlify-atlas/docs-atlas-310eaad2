@@ -1,0 +1,275 @@
+---
+title: "Catalog endpoints: barbers and procedures"
+description: "Browse the EdgeTimer catalog — list active barbers with their specialties and ratings, fetch individual profiles, and explore available services."
+---
+
+The catalog is a read-mostly surface of the EdgeTimer API. Clients use it to discover active barbers, review their specialties and average ratings, and explore the full list of available procedures before booking an appointment. Photo upload endpoints are also housed here so that barber and client profile images can be managed in one place.
+
+<Note>
+  The `foto` field on barber and client objects is a signed Supabase storage URL. Signed URLs expire after a set period — always fetch a fresh barber or client record when you need to display a current photo rather than caching the URL long-term.
+</Note>
+
+---
+
+## GET /catalogos/barberos
+
+Retrieve all active barbers, ordered alphabetically by name. Each barber includes their specialties (procedures) and a pre-computed average rating.
+
+### Response
+
+Returns an array of `Barbero` objects.
+
+<ResponseField name="id" type="string" required>
+  Unique barber profile identifier.
+</ResponseField>
+
+<ResponseField name="nombre" type="string" required>
+  Barber display name.
+</ResponseField>
+
+<ResponseField name="foto" type="string">
+  Signed Supabase storage URL for the barber's profile photo. May be `null` if no photo has been uploaded.
+</ResponseField>
+
+<ResponseField name="promedioCalificacion" type="number" required>
+  Average client rating from 0 to 5.
+</ResponseField>
+
+<ResponseField name="especialidades" type="Procedimiento[]" required>
+  List of procedures this barber offers.
+  <Expandable title="Procedimiento properties">
+    <ResponseField name="id" type="string" required>
+      Unique procedure identifier.
+    </ResponseField>
+    <ResponseField name="nombre" type="string" required>
+      Procedure name (e.g., "Corte clásico").
+    </ResponseField>
+    <ResponseField name="precio" type="number" required>
+      Price in the platform's base currency.
+    </ResponseField>
+    <ResponseField name="duracionMinutos" type="number" required>
+      Estimated duration in minutes.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="horarioLaboral" type="string" required>
+  Human-readable working hours description (e.g., `"Lunes a viernes, 8am-6pm"`).
+</ResponseField>
+
+<CodeGroup>
+
+```bash List barbers
+curl https://edgetimer-backend.onrender.com/catalogos/barberos
+```
+
+</CodeGroup>
+
+```json Response
+[
+  {
+    "id": "barbero_abc123",
+    "nombre": "Carlos Mendoza",
+    "foto": "https://storage.supabase.co/signed/barberos/carlos.jpg?token=...",
+    "promedioCalificacion": 4.8,
+    "especialidades": [
+      {
+        "id": "proc_01",
+        "nombre": "Corte clásico",
+        "precio": 150,
+        "duracionMinutos": 30
+      },
+      {
+        "id": "proc_02",
+        "nombre": "Barba completa",
+        "precio": 100,
+        "duracionMinutos": 20
+      }
+    ],
+    "horarioLaboral": "Lunes a viernes, 8am-6pm"
+  }
+]
+```
+
+---
+
+## GET /catalogos/barberos/:id
+
+Retrieve a single active barber by their profile ID.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  Unique barber profile identifier.
+</ParamField>
+
+### Response
+
+Returns a single `Barbero` object with the same shape as each item in the `GET /catalogos/barberos` response.
+
+<CodeGroup>
+
+```bash Get one barber
+curl https://edgetimer-backend.onrender.com/catalogos/barberos/barbero_abc123
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "id": "barbero_abc123",
+  "nombre": "Carlos Mendoza",
+  "foto": "https://storage.supabase.co/signed/barberos/carlos.jpg?token=...",
+  "promedioCalificacion": 4.8,
+  "especialidades": [
+    {
+      "id": "proc_01",
+      "nombre": "Corte clásico",
+      "precio": 150,
+      "duracionMinutos": 30
+    }
+  ],
+  "horarioLaboral": "Lunes a viernes, 8am-6pm"
+}
+```
+
+---
+
+## POST /catalogos/barberos/:id/foto
+
+Upload or replace a barber's profile photo. The file is stored in Supabase storage and the barber's record is updated with the new URL.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  Barber profile ID whose photo will be updated.
+</ParamField>
+
+### Body
+
+Send the image as `multipart/form-data`. The field name must be `photo`.
+
+<ParamField body="photo" type="file" required>
+  Image file to upload. Common formats: JPEG, PNG, WebP.
+</ParamField>
+
+### Response
+
+<ResponseField name="url" type="string" required>
+  Signed Supabase storage URL for the uploaded photo.
+</ResponseField>
+
+<CodeGroup>
+
+```bash Upload barber photo
+curl -X POST \
+  https://edgetimer-backend.onrender.com/catalogos/barberos/barbero_abc123/foto \
+  -F "photo=@/path/to/photo.jpg"
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "url": "https://storage.supabase.co/signed/barberos/barbero_abc123-1716000000000.jpg?token=..."
+}
+```
+
+---
+
+## POST /catalogos/clientes/:id/foto
+
+Upload or replace a client's profile photo. Follows the same upload mechanics as the barber photo endpoint.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  Client profile ID whose photo will be updated.
+</ParamField>
+
+### Body
+
+Send the image as `multipart/form-data`. The field name must be `photo`.
+
+<ParamField body="photo" type="file" required>
+  Image file to upload. Common formats: JPEG, PNG, WebP.
+</ParamField>
+
+### Response
+
+<ResponseField name="url" type="string" required>
+  Signed Supabase storage URL for the uploaded photo.
+</ResponseField>
+
+<CodeGroup>
+
+```bash Upload client photo
+curl -X POST \
+  https://edgetimer-backend.onrender.com/catalogos/clientes/cliente_xyz789/foto \
+  -F "photo=@/path/to/photo.jpg"
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "url": "https://storage.supabase.co/signed/clientes/cliente_xyz789-1716000000000.jpg?token=..."
+}
+```
+
+---
+
+## GET /catalogos/procedimientos
+
+Retrieve all active procedures (services) offered on the platform, ordered alphabetically by name.
+
+### Response
+
+Returns an array of procedure objects.
+
+<ResponseField name="id" type="string" required>
+  Unique procedure identifier.
+</ResponseField>
+
+<ResponseField name="nombre" type="string" required>
+  Procedure name.
+</ResponseField>
+
+<ResponseField name="descripcion" type="string" required>
+  Description of the procedure. May be an empty string if no description has been set.
+</ResponseField>
+
+<ResponseField name="precio" type="number" required>
+  Price in the platform's base currency.
+</ResponseField>
+
+<ResponseField name="duracionMinutos" type="number" required>
+  Estimated duration in minutes.
+</ResponseField>
+
+<CodeGroup>
+
+```bash List procedures
+curl https://edgetimer-backend.onrender.com/catalogos/procedimientos
+```
+
+</CodeGroup>
+
+```json Response
+[
+  {
+    "id": "proc_01",
+    "nombre": "Barba completa",
+    "descripcion": "Perfilado y arreglo completo de barba con navaja.",
+    "precio": 100,
+    "duracionMinutos": 20
+  },
+  {
+    "id": "proc_02",
+    "nombre": "Corte clásico",
+    "descripcion": "Corte de cabello con tijera y máquina.",
+    "precio": 150,
+    "duracionMinutos": 30
+  }
+]
+```

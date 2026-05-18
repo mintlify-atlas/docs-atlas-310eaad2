@@ -1,0 +1,270 @@
+---
+title: "Availability slot endpoints"
+description: "Manage barber availability slots — list open time windows, create new slots, update existing ones, and remove them when no longer needed."
+---
+
+Slots are time windows that barbers open in their calendar so clients can browse and reserve them. Each slot carries a date, start time, optional end time, and a status that tracks whether it is still available. Clients see all open slots across all barbers; a barber filtering by their own `profileId` sees only the slots they own.
+
+<Note>
+  Clients receive all available slots when no `profileId` is supplied. Barbers should always pass their own `profileId` to scope results to their own schedule.
+</Note>
+
+---
+
+## GET /slots
+
+Retrieve a list of availability slots. Pass `profileId` to filter by a specific barber.
+
+### Query parameters
+
+<ParamField query="profileId" type="string">
+  Barber profile ID. When provided, only slots belonging to this barber are returned.
+</ParamField>
+
+### Response
+
+Returns an array of `SlotDisponible` objects.
+
+<ResponseField name="id" type="string" required>
+  Unique slot identifier.
+</ResponseField>
+
+<ResponseField name="barbero" type="object" required>
+  Barber who owns the slot.
+  <Expandable title="barbero properties">
+    <ResponseField name="id" type="string" required>
+      Barber profile ID.
+    </ResponseField>
+    <ResponseField name="nombre" type="string" required>
+      Barber display name.
+    </ResponseField>
+    <ResponseField name="foto" type="string">
+      Signed URL for the barber's profile photo.
+    </ResponseField>
+    <ResponseField name="promedioCalificacion" type="number" required>
+      Average rating from 0 to 5.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="inicioAt" type="string" required>
+  ISO 8601 datetime of the slot start.
+</ResponseField>
+
+<ResponseField name="finAt" type="string" required>
+  ISO 8601 datetime of the slot end.
+</ResponseField>
+
+<ResponseField name="fecha" type="string" required>
+  Date of the slot in `YYYY-MM-DD` format.
+</ResponseField>
+
+<ResponseField name="horaInicio" type="string" required>
+  Start time in `HH:MM` format.
+</ResponseField>
+
+<ResponseField name="horaFin" type="string" required>
+  End time in `HH:MM` format.
+</ResponseField>
+
+<ResponseField name="estado" type="string" required>
+  Slot status. Common values: `disponible`, `reservado`, `cancelado`.
+</ResponseField>
+
+<CodeGroup>
+
+```bash All slots
+curl https://edgetimer-backend.onrender.com/slots
+```
+
+```bash Barber's own slots
+curl "https://edgetimer-backend.onrender.com/slots?profileId=barbero_abc123"
+```
+
+</CodeGroup>
+
+```json Response
+[
+  {
+    "id": "slot_01",
+    "barbero": {
+      "id": "barbero_abc123",
+      "nombre": "Carlos Mendoza",
+      "foto": "https://storage.example.com/signed/barberos/carlos.jpg",
+      "promedioCalificacion": 4.8
+    },
+    "inicioAt": "2026-05-20T09:00:00.000Z",
+    "finAt": "2026-05-20T10:00:00.000Z",
+    "fecha": "2026-05-20",
+    "horaInicio": "09:00",
+    "horaFin": "10:00",
+    "estado": "disponible"
+  }
+]
+```
+
+---
+
+## POST /slots
+
+Create a new availability slot. This action is intended for barbers only.
+
+### Body parameters
+
+<ParamField body="profileId" type="string" required>
+  Barber profile ID. The slot is created under this barber's calendar.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  Date for the slot in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaInicio" type="string" required>
+  Start time in `HH:MM` format (24-hour clock).
+</ParamField>
+
+<ParamField body="horaFin" type="string">
+  Optional. The slot's actual end time is always set to 15 minutes after `horaInicio` by the server regardless of this value. The appointment end time is determined later when a client selects procedures.
+</ParamField>
+
+### Response
+
+Returns the newly created slot object with the same shape as the `GET /slots` response items.
+
+<CodeGroup>
+
+```bash Create slot
+curl -X POST https://edgetimer-backend.onrender.com/slots \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profileId": "barbero_abc123",
+    "fecha": "2026-05-22",
+    "horaInicio": "10:00",
+    "horaFin": "11:00"
+  }'
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "id": "slot_02",
+  "barbero": {
+    "id": "barbero_abc123",
+    "nombre": "Carlos Mendoza",
+    "foto": "https://storage.example.com/signed/barberos/carlos.jpg",
+    "promedioCalificacion": 4.8
+  },
+  "inicioAt": "2026-05-22T10:00:00.000Z",
+  "finAt": "2026-05-22T11:00:00.000Z",
+  "fecha": "2026-05-22",
+  "horaInicio": "10:00",
+  "horaFin": "11:00",
+  "estado": "disponible"
+}
+```
+
+---
+
+## PATCH /slots/:id
+
+Update an existing slot. Use this to change the date or times of a slot that has not yet been reserved.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  Unique identifier of the slot to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="profileId" type="string" required>
+  Barber profile ID. Must match the owner of the slot.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  New date for the slot in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaInicio" type="string" required>
+  New start time in `HH:MM` format (24-hour clock).
+</ParamField>
+
+<ParamField body="horaFin" type="string">
+  Optional. The server recalculates the end time as 15 minutes after the new `horaInicio` regardless of this value.
+</ParamField>
+
+### Response
+
+Returns the updated slot object.
+
+<CodeGroup>
+
+```bash Update slot
+curl -X PATCH https://edgetimer-backend.onrender.com/slots/slot_02 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profileId": "barbero_abc123",
+    "fecha": "2026-05-22",
+    "horaInicio": "11:00",
+    "horaFin": "12:00"
+  }'
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "id": "slot_02",
+  "barbero": {
+    "id": "barbero_abc123",
+    "nombre": "Carlos Mendoza",
+    "foto": "https://storage.example.com/signed/barberos/carlos.jpg",
+    "promedioCalificacion": 4.8
+  },
+  "inicioAt": "2026-05-22T11:00:00.000Z",
+  "finAt": "2026-05-22T12:00:00.000Z",
+  "fecha": "2026-05-22",
+  "horaInicio": "11:00",
+  "horaFin": "12:00",
+  "estado": "disponible"
+}
+```
+
+---
+
+## DELETE /slots/:id
+
+Delete a slot. The `profileId` query parameter is required and must match the barber who owns the slot, preventing one barber from deleting another barber's slots.
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  Unique identifier of the slot to delete.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="profileId" type="string" required>
+  Barber profile ID. Must match the owner of the slot.
+</ParamField>
+
+### Response
+
+Returns a confirmation object for the deleted slot.
+
+<CodeGroup>
+
+```bash Delete slot
+curl -X DELETE \
+  "https://edgetimer-backend.onrender.com/slots/slot_02?profileId=barbero_abc123"
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "id": "slot_02",
+  "estado": "cancelado"
+}
+```

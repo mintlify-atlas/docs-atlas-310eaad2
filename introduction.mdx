@@ -1,0 +1,58 @@
+---
+title: "What is EdgeTimer?"
+description: "EdgeTimer is a barbershop appointment scheduling platform connecting clients and barbers with real-time booking, availability management, and ratings."
+---
+
+EdgeTimer is a full-stack platform designed for barbershops that want to modernize how they manage appointments. Clients browse barbers, book sessions, and rate their experience — while barbers control their availability, confirm bookings, and build their reputation through reviews.
+
+## Two roles, one platform
+
+EdgeTimer is built around two distinct user types that share the same mobile app:
+
+<CardGroup cols={2}>
+  <Card title="Clients (Clientes)" icon="user">
+    Browse the barber catalog, book appointments by requesting a custom time or reserving a pre-opened slot, manage upcoming and past appointments, and rate completed sessions.
+  </Card>
+  <Card title="Barbers (Barberos)" icon="scissors">
+    Publish availability slots, receive and manage appointment requests, reschedule or cancel confirmed bookings, and build a profile with photos, specialties, and ratings.
+  </Card>
+</CardGroup>
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Appointment booking" icon="calendar-check" href="/features/appointments">
+    Full lifecycle management — from pending request to confirmed, completed, canceled, or rejected.
+  </Card>
+  <Card title="Availability slots" icon="clock" href="/features/availability-slots">
+    Barbers publish open time windows; clients can instantly reserve them without back-and-forth.
+  </Card>
+  <Card title="Barber catalog" icon="address-card" href="/features/barber-catalog">
+    Profiles with photos, service listings, pricing, duration estimates, and average star ratings.
+  </Card>
+  <Card title="Ratings & reviews" icon="star" href="/features/ratings">
+    Clients rate completed appointments on a 1–5 scale and leave written reviews.
+  </Card>
+</CardGroup>
+
+## Architecture overview
+
+EdgeTimer consists of two parts:
+
+- **Mobile app** — A React Native / Expo application that runs on iOS, Android, and the web (deployed on Vercel). It communicates with the backend over a REST API.
+- **Backend API** — A NestJS application backed by Supabase (PostgreSQL + Auth + Storage). It exposes REST endpoints for authentication, appointments, availability slots, and the barber catalog.
+
+<Note>
+The backend API is hosted at `https://edgetimer-backend.onrender.com`. The mobile app connects to this URL by default with no additional configuration required.
+</Note>
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="I'm a client" icon="user" href="/quickstart-client">
+    Create your account and book your first appointment.
+  </Card>
+  <Card title="I'm a barber" icon="scissors" href="/quickstart-barber">
+    Log in with your credentials and open your first availability slot.
+  </Card>
+</CardGroup>

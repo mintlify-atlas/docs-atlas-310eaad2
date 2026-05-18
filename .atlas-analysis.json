@@ -1,0 +1,112 @@
+{
+  "projectType": "saas",
+  "projectName": "EdgeTimer",
+  "projectDescription": "A full-stack barbershop appointment scheduling platform with a React Native/Expo mobile app and NestJS backend, enabling clients to book haircut appointments and barbers to manage their availability and schedule.",
+  "theme": "almond",
+  "primaryColor": "#ae834c",
+  "lightColor": "#60482a",
+  "darkColor": "#8e6b3e",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart-client",
+              "quickstart-barber"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/appointments",
+              "features/availability-slots",
+              "features/barber-catalog",
+              "features/ratings"
+            ]
+          },
+          {
+            "group": "Mobile App",
+            "pages": [
+              "mobile/overview",
+              "mobile/screens",
+              "mobile/configuration"
+            ]
+          },
+          {
+            "group": "Backend",
+            "pages": [
+              "backend/overview",
+              "backend/setup",
+              "backend/configuration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Authentication",
+            "pages": [
+              "api/auth/register",
+              "api/auth/login"
+            ]
+          },
+          {
+            "group": "Appointments",
+            "pages": [
+              "api/citas/list",
+              "api/citas/request",
+              "api/citas/reserve",
+              "api/citas/manage"
+            ]
+          },
+          {
+            "group": "Slots & Catalog",
+            "pages": [
+              "api/slots/manage",
+              "api/catalogos/overview"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Dual-role system supporting both clients (clientes) and barbers (barberos)",
+    "Appointment request flow: clients can request citas directly with a barber or reserve pre-opened time slots",
+    "Barber availability slot management: barbers open time slots that clients can reserve",
+    "Full appointment lifecycle: pending → confirmed → completed, with cancel and reschedule support",
+    "Star rating and review system for completed appointments",
+    "Barber catalog with profile photos, specialties, pricing, and average ratings",
+    "Interactive monthly calendar view for visualizing appointments and available slots",
+    "Profile photo upload for both barbers and clients via Supabase Storage",
+    "Supabase-powered backend with row-level security and stored procedures",
+    "React Native/Expo mobile app with web support via Vercel"
+  ],
+  "publicApiSurface": [
+    "POST /auth/register-client",
+    "POST /auth/login",
+    "GET /citas",
+    "POST /citas/solicitar",
+    "POST /citas/reservar",
+    "PATCH /citas/:id/aceptar",
+    "PATCH /citas/:id/rechazar",
+    "PATCH /citas/:id/cancelar",
+    "PATCH /citas/:id/reprogramar",
+    "POST /citas/:id/calificar",
+    "GET /slots",
+    "POST /slots",
+    "PATCH /slots/:id",
+    "DELETE /slots/:id",
+    "GET /catalogos/barberos",
+    "GET /catalogos/barberos/:id",
+    "POST /catalogos/barberos/:id/foto",
+    "POST /catalogos/clientes/:id/foto",
+    "GET /catalogos/procedimientos"
+  ]
+}

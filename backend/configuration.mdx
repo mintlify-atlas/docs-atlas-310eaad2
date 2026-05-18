@@ -1,0 +1,70 @@
+---
+title: "Backend environment variables"
+description: "Environment variables required to connect the EdgeTimer backend to Supabase for database access, authentication, and file storage."
+---
+
+The EdgeTimer backend reads all external configuration from environment variables loaded by `@nestjs/config` at startup. The three Supabase connection variables are required — the server throws immediately if any are absent. The storage bucket variables are optional and fall back to the default bucket names provisioned in a standard Supabase project.
+
+Place these variables in a `.env` file in the `backend/` directory for local development. In production, set them as environment variables on your hosting platform (for example, Heroku config vars).
+
+<Warning>
+  Never commit `SUPABASE_SERVICE_ROLE_KEY` to source control. This key bypasses all Supabase Row Level Security (RLS) policies and grants full database access. Add `.env` to your `.gitignore` before your first commit.
+</Warning>
+
+## Supabase connection
+
+These three variables are **required**. The application throws an error at startup if any are missing.
+
+<ParamField path="SUPABASE_URL" type="string" required>
+  The base URL of your Supabase project, for example `https://abcdefgh.supabase.co`. Found in the Supabase dashboard under **Project Settings → API → Project URL**.
+</ParamField>
+
+<ParamField path="SUPABASE_KEY" type="string" required>
+  The anon (public) API key for your project. Used to create the user-scoped `supabase` client that respects Row Level Security policies. Found in the Supabase dashboard under **Project Settings → API → Project API keys → anon public**.
+</ParamField>
+
+<ParamField path="SUPABASE_SERVICE_ROLE_KEY" type="string" required>
+  The service role secret key. Used to create the `supabaseAdmin` client that bypasses RLS for privileged server-side queries and storage operations. Found in the Supabase dashboard under **Project Settings → API → Project API keys → service_role**.
+</ParamField>
+
+## Supabase Storage buckets
+
+These variables configure which Supabase Storage buckets are used when uploading and resolving barber and client profile photos. All are optional; if omitted the defaults shown below are used.
+
+The service tries each bucket in order and falls back to the next if the bucket is not found, which makes it straightforward to migrate bucket names without a code change.
+
+<ParamField path="SUPABASE_STORAGE_BUCKET_BARBEROS" type="string" default="barberos">
+  Primary bucket for barber profile photo uploads.
+</ParamField>
+
+<ParamField path="SUPABASE_STORAGE_BUCKET_BARBERO" type="string" default="barbero">
+  Fallback bucket for barber profile photos, tried if `SUPABASE_STORAGE_BUCKET_BARBEROS` is not found.
+</ParamField>
+
+<ParamField path="SUPABASE_STORAGE_BUCKET_CLIENTES" type="string" default="clientes">
+  Primary bucket for client profile photo uploads.
+</ParamField>
+
+<ParamField path="SUPABASE_STORAGE_BUCKET_CLIENTE" type="string" default="cliente">
+  Fallback bucket for client profile photos, tried if `SUPABASE_STORAGE_BUCKET_CLIENTES` is not found.
+</ParamField>
+
+<ParamField path="SUPABASE_STORAGE_BUCKET_PUBLIC" type="string" default="public">
+  Final fallback bucket used for both barber and client photo uploads when the primary and secondary buckets are not found.
+</ParamField>
+
+## Example `.env`
+
+```bash .env
+# Required — Supabase connection
+SUPABASE_URL=https://abcdefghijkl.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Optional — Storage bucket names (shown with their defaults)
+SUPABASE_STORAGE_BUCKET_BARBEROS=barberos
+SUPABASE_STORAGE_BUCKET_BARBERO=barbero
+SUPABASE_STORAGE_BUCKET_CLIENTES=clientes
+SUPABASE_STORAGE_BUCKET_CLIENTE=cliente
+SUPABASE_STORAGE_BUCKET_PUBLIC=public
+```

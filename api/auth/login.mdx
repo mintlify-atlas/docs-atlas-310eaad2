@@ -1,0 +1,184 @@
+---
+title: "POST /auth/login"
+description: "Authenticate a client or barber on the EdgeTimer barbershop platform and receive a JWT session token to authorize subsequent API requests."
+---
+
+This endpoint authenticates both clients (clientes) and barbers (barberos) on the EdgeTimer platform. A successful login returns a JWT session containing an `accessToken`, `refreshToken`, and expiry time, along with the authenticated user's profile. The `role` field is required to distinguish between account types — credentials that match the wrong role are rejected.
+
+## Base URL
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+## Request
+
+`POST /auth/login`
+
+### Body parameters
+
+<ParamField body="role" type="string" required>
+  The account type to authenticate as. Must be either `"cliente"` or `"barbero"`.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Email address associated with the account. Normalized to lowercase before lookup.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Password for the account.
+</ParamField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://edgetimer-backend.onrender.com/auth/login \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "role": "cliente",
+    "email": "ana.lopez@example.com",
+    "password": "mysecretpass"
+  }'
+```
+
+```javascript JavaScript
+import axios from 'axios';
+
+const response = await axios.post(
+  'https://edgetimer-backend.onrender.com/auth/login',
+  {
+    role: 'cliente',
+    email: 'ana.lopez@example.com',
+    password: 'mysecretpass',
+  }
+);
+
+const { accessToken } = response.data.session;
+
+// Use the token in subsequent requests
+const citas = await axios.get(
+  'https://edgetimer-backend.onrender.com/citas',
+  {
+    params: { role: 'cliente', profileId: response.data.profile.id },
+    headers: { Authorization: `Bearer ${accessToken}` },
+  }
+);
+```
+
+</CodeGroup>
+
+## Response
+
+### 200 OK
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating a successful login.
+</ResponseField>
+
+<ResponseField name="session" type="object">
+  JWT session credentials. Use the `accessToken` to authenticate subsequent requests.
+
+  <Expandable title="properties">
+    <ResponseField name="accessToken" type="string">
+      JWT access token. Pass this as a Bearer token in the `Authorization` header of subsequent requests: `Authorization: Bearer <accessToken>`.
+    </ResponseField>
+    <ResponseField name="refreshToken" type="string">
+      Token used to obtain a new access token when the current one expires.
+    </ResponseField>
+    <ResponseField name="expiresAt" type="number">
+      Unix timestamp (seconds) indicating when the access token expires.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="profile" type="object">
+  Profile of the authenticated user.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="string">
+      Unique identifier for the account.
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Full name of the user.
+    </ResponseField>
+    <ResponseField name="usuario" type="string">
+      Username associated with the account.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      Email address of the account.
+    </ResponseField>
+    <ResponseField name="role" type="string">
+      Account type: `"cliente"` or `"barbero"`.
+    </ResponseField>
+    <ResponseField name="foto" type="string | null">
+      Signed URL for the user's profile photo. `null` if no photo has been set.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp of when the account was created.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+```json Example response
+{
+  "message": "Inicio de sesion exitoso",
+  "session": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "v1.refresh-token-value",
+    "expiresAt": 1748300000
+  },
+  "profile": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "nombre": "Ana López",
+    "usuario": "ana.lopez",
+    "email": "ana.lopez@example.com",
+    "role": "cliente",
+    "foto": null,
+    "createdAt": "2026-01-15T10:30:00.000Z"
+  }
+}
+```
+
+## Using the access token
+
+Include the `accessToken` from the session response in the `Authorization` header of all subsequent requests that require authentication:
+
+```
+Authorization: Bearer <accessToken>
+```
+
+## Error responses
+
+| Status | Description |
+| ------ | ----------- |
+| `401 Unauthorized` | Email or password is incorrect. |
+| `401 Unauthorized` | The provided `role` does not match the account type for these credentials. |
+| `400 Bad Request` | The `role` field contains a value other than `"cliente"` or `"barbero"`. |
+
+```json 401 example — wrong credentials
+{
+  "statusCode": 401,
+  "message": "Usuario o contrasena incorrectos"
+}
+```
+
+```json 401 example — role mismatch
+{
+  "statusCode": 401,
+  "message": "El rol no coincide con esta cuenta"
+}
+```
+
+```json 400 example — invalid role
+{
+  "statusCode": 400,
+  "message": "El rol enviado no es valido"
+}
+```
+
+<Warning>
+  Always pass the correct `role` for the account type you are authenticating. Providing the wrong role (for example, `"barbero"` with a client's credentials) will result in a `401` error even if the email and password are correct.
+</Warning>

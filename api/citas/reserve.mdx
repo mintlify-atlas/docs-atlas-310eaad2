@@ -1,0 +1,100 @@
+---
+title: "POST /citas/reservar — reserve a slot"
+description: "Book an appointment by claiming a barber's pre-opened availability slot and selecting the specific procedures you would like performed."
+---
+
+The `reservar` flow lets a client book a time slot that a barber has already published as available. Unlike `solicitar` — where the client proposes an arbitrary time and waits for the barber to accept — `reservar` works against a specific slot ID from the barber's schedule and creates a `"confirmada"` appointment immediately. The slot provides the date and start time; the client only needs to specify which procedures they want and any optional notes.
+
+## Base URL
+
+```
+https://edgetimer-backend.onrender.com
+```
+
+## Request
+
+`POST /citas/reservar`
+
+### Body parameters
+
+<ParamField body="profileId" type="string" required>
+  The profile ID of the client reserving the slot.
+</ParamField>
+
+<ParamField body="slotId" type="string" required>
+  The ID of the availability slot to reserve. Obtain available slot IDs from `GET /slots`.
+</ParamField>
+
+<ParamField body="procedimientoIds" type="string[]" required>
+  Array of procedure IDs to include in the appointment. At least one ID is required.
+</ParamField>
+
+<ParamField body="notas" type="string">
+  Optional free-text notes for the barber (e.g., style preferences or special instructions).
+</ParamField>
+
+## Response
+
+Returns the newly created `Cita` object. The `slotId` field will match the slot you reserved, and `estado` will be `"confirmada"` — reserving a slot skips the pending phase and confirms the appointment immediately.
+
+See the [Cita object reference](/api/citas/list#cita-object) for a full description of all response fields.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://edgetimer-backend.onrender.com/citas/reservar \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "profileId": "abc123",
+    "slotId": "slot-88",
+    "procedimientoIds": ["proc-01"],
+    "notas": "Sin máquina"
+  }'
+```
+
+</CodeGroup>
+
+```json Example response
+{
+  "id": "cita-099",
+  "cliente": {
+    "id": "abc123",
+    "nombre": "Ana López",
+    "foto": null
+  },
+  "barbero": {
+    "id": "barber-007",
+    "nombre": "Carlos Mendoza",
+    "foto": "https://example.com/fotos/carlos.jpg",
+    "promedioCalificacion": 4.8
+  },
+  "slotId": "slot-88",
+  "procedimientos": [
+    {
+      "id": "proc-01",
+      "nombre": "Corte de cabello",
+      "descripcion": "Corte clásico con tijeras",
+      "precio": 120,
+      "duracionMinutos": 30
+    }
+  ],
+  "costoTotal": 120,
+  "inicioAt": "2026-06-18T14:00:00.000Z",
+  "finAt": "2026-06-18T14:30:00.000Z",
+  "fecha": "2026-06-18",
+  "horaInicio": "09:00",
+  "horaFin": "09:30",
+  "estado": "confirmada",
+  "estadoLabel": "Confirmada",
+  "notas": "Sin máquina",
+  "puedeModificar": true,
+  "calificacion": null
+}
+```
+
+<Info>
+  To discover which slots a barber has opened, use `GET /slots?profileId={barberoId}` before calling this endpoint.
+</Info>
